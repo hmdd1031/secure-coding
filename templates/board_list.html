@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}게시판 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="section-heading board-heading">
+    <div><p class="eyebrow">COMMUNITY BOARD</p><h1>화이트 마켓 게시판</h1><p class="helper">거래 후기, 질문, 정보 공유를 게시글과 댓글로 나눕니다.</p></div>
+    {% if current_user %}<a class="button board-write-button" href="{{ url_for('board_new') }}">글쓰기</a>{% else %}<a class="button board-write-button" href="{{ url_for('login', next=url_for('board_new')) }}">로그인 후 글쓰기</a>{% endif %}
+</div>
+<form class="board-search" method="get" action="{{ url_for('board_list') }}">
+    <label class="sr-only" for="board-q">게시판 검색</label>
+    <input id="board-q" name="q" value="{{ query }}" maxlength="50" placeholder="제목, 내용, 작성자 검색">
+    <select name="category" aria-label="게시판 카테고리">
+        <option value="">전체 카테고리</option>
+        {% for category in categories %}<option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+    </select>
+    <button type="submit">검색</button>
+</form>
+<section class="board-table-card">
+    <div class="board-table-head"><span>분류</span><span>제목</span><span>작성자</span><span>조회</span><span>작성일</span></div>
+    {% for post in posts %}
+        <a class="board-row" href="{{ url_for('board_detail', post_id=post.id) }}">
+            <span class="category-chip">{{ post.category }}</span>
+            <strong>{{ post.title }}{% if post.comment_count %} <small>[{{ post.comment_count }}]</small>{% endif %}</strong>
+            <span>{{ post.author_nickname }}</span>
+            <span>{{ post.view_count }}</span>
+            <time>{{ post.created_at|kst }}</time>
+        </a>
+    {% else %}<div class="empty-state">등록된 게시글이 없습니다.</div>{% endfor %}
+</section>
+{% endblock %}

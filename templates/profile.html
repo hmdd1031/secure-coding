@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}마이페이지 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="section-heading profile-heading">
+    <div><p class="eyebrow">MY PAGE</p><h1>{{ user.nickname or user.username }}</h1><p class="helper">로그인 아이디 @{{ user.username }} · 이름 {{ user.real_name }}</p></div>
+    <div class="button-row compact-actions">
+        <a class="button secondary" href="{{ url_for('public_profile', username=user.username) }}">공개 프로필 보기</a>
+        <a class="button secondary" href="{{ url_for('update_password') }}">비밀번호 변경</a>
+    </div>
+</div>
+<section class="profile-dashboard">
+    <div class="profile-forms">
+        <section class="form-card profile-card-form">
+            <h2>소개글</h2>
+            <form method="post" action="{{ url_for('update_bio') }}" class="stack-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label for="bio">공개 소개글</label>
+                <textarea class="fixed-textarea" id="bio" name="bio" maxlength="300" rows="5">{{ user.bio }}</textarea>
+                <button type="submit">소개글 저장</button>
+            </form>
+        </section>
+
+        <section class="form-card profile-card-form">
+            <h2>연락처·주소</h2>
+            <p class="field-help">아래 정보는 공개 프로필에 표시되지 않습니다.</p>
+            <form method="post" action="{{ url_for('update_contact') }}" class="stack-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label for="phone">휴대전화 번호</label>
+                <input id="phone" name="phone" value="{{ user.phone }}" required maxlength="13" inputmode="tel">
+                <fieldset class="address-fieldset compact-address-fieldset">
+                    <legend>주소</legend>
+                    <div class="postal-code-field"><label for="postal_code">우편번호</label><input id="postal_code" name="postal_code" value="{{ user.postal_code }}" required inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" autocomplete="postal-code" placeholder="06236"></div>
+                    <div class="address-grid">
+                        <div><label for="address_city">시·도</label><input id="address_city" name="address_city" value="{{ user.address_city }}" required minlength="2" maxlength="30" placeholder="서울특별시"></div>
+                        <div><label for="address_district">시·군·구</label><input id="address_district" name="address_district" value="{{ user.address_district }}" required minlength="2" maxlength="30" placeholder="강남구"></div>
+                        <div><label for="address_neighborhood">읍·면·동</label><input id="address_neighborhood" name="address_neighborhood" value="{{ user.address_neighborhood }}" required minlength="1" maxlength="30" placeholder="역삼동"></div>
+                    </div>
+                    <label for="address_detail">상세 주소</label>
+                    <input id="address_detail" name="address_detail" value="{{ user.address_detail }}" required minlength="1" maxlength="100" placeholder="번지, 건물명, 동·호수">
+                </fieldset>
+                <button type="submit">연락처 저장</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="my-products-panel" id="my-products">
+        <div class="section-heading"><div><h2>내 상품 관리</h2><p class="helper">수정, 거래 상태 변경, 삭제를 한곳에서 관리합니다.</p></div>{% if not user.is_admin %}<a class="button" href="{{ url_for('add_product') }}">새 상품</a>{% endif %}</div>
+        <div class="my-product-management-list">
+        {% for product in products %}
+            <article class="my-product-management-card">
+                <div class="my-product-summary">
+                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="my-product-thumb">
+                        <img src="{{ product_image_url(product.image_filename) }}" alt="{{ product.name }}">
+                    </a>
+                    <div>
+                        <p class="category-chip">{{ product.category }}</p>
+                        <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+                        <p class="price">{{ "{:,}".format(product.price) }}원{% if product.status == 'hidden' %} · 관리자 숨김{% endif %}</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{{ url_for('product_status', product_id=product.id) }}" class="product-status-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <span class="control-label">거래 상태</span>
+                    <div class="segmented-status" role="radiogroup" aria-label="{{ product.name }} 거래 상태">
+                        {% for value, label in trade_status_labels.items() %}
+                        <label>
+                            <input type="radio" name="trade_status" value="{{ value }}" {% if product.trade_status == value %}checked{% endif %}>
+                            <span>{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="status-save-button">상태 저장</button>
+                </form>
+
+                <div class="my-product-actions">
+                    <a class="button secondary" href="{{ url_for('edit_product', product_id=product.id) }}">상품 수정</a>
+                    <a class="button secondary" href="{{ url_for('product_detail', product_id=product.id) }}">상세 보기</a>
+                    <form method="post" action="{{ url_for('delete_product', product_id=product.id) }}" data-confirm="상품을 삭제할까요? 삭제 후 복구할 수 없습니다.">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="button danger">상품 삭제</button>
+                    </form>
+                </div>
+            </article>
+        {% else %}<div class="empty-state">등록한 상품이 없습니다.</div>{% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} 대화 - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="private-chat-shell">
+    <header class="private-chat-header">
+        <a class="chat-back-link" href="{{ url_for('messages') }}" aria-label="대화 목록으로 돌아가기">←</a>
+        <div>
+            <p class="eyebrow">PRODUCT CONVERSATION</p>
+            <h1>{{ other_user.nickname or other_user.username }}</h1>
+            <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }} · {{ "{:,}".format(product.price) }}원</a>
+        </div>
+        <span class="category-chip">{{ product.category }}</span>
+    </header>
+
+    <div class="private-chat-messages" data-chat-scroll>
+    {% for message in thread_messages %}
+        <article class="private-chat-bubble {% if message.sender_id == user.id %}mine{% else %}theirs{% endif %}">
+            {% if message.sender_id != user.id %}<strong>{{ message.sender_nickname }}</strong>{% endif %}
+            <p>{{ message.body }}</p>
+            <time>{{ message.created_at|kst }}</time>
+        </article>
+    {% else %}
+        <div class="chat-empty">이 상품에 대한 첫 메시지를 보내보세요.</div>
+    {% endfor %}
+    </div>
+
+    <form method="post" action="{{ url_for('send_message', product_id=product.id) }}" class="private-chat-compose" data-single-submit>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="receiver_id" value="{{ other_user.id }}">
+        <label class="sr-only" for="message-body">메시지 내용</label>
+        <textarea class="fixed-textarea" id="message-body" name="body" required minlength="1" maxlength="500" rows="2" placeholder="메시지를 입력하세요."></textarea>
+        <button type="submit" data-submit-button>전송</button>
+    </form>
+</section>
+{% endblock %}

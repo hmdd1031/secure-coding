@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}오류 {{ code }}{% endblock %}
+{% block content %}<section class="error-card"><p class="error-code">{{ code }}</p><h1>{{ message }}</h1><a class="button" href="{{ url_for('index') }}">홈으로</a></section>{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="detail-layout">
+    <div class="detail-image">
+        {% if product.image_filename %}
+            <img src="{{ product_image_url(product.image_filename) }}" alt="{{ product.name }}">
+        {% else %}<div class="image-placeholder large">이미지 준비 중</div>{% endif %}
+    </div>
+    <div class="detail-info">
+        <p class="category-chip detail-category">{{ product.category }}</p>
+        <h1>{{ product.name }}</h1>
+        <p class="detail-price">{{ "{:,}".format(product.price) }}원</p>
+        <dl class="spec-list">
+            <div><dt>판매자</dt><dd><a class="seller-profile-link" href="{{ url_for('public_profile', username=product.seller_name) }}">{{ product.seller_nickname }} 프로필 보기 →</a></dd></div>
+            <div><dt>거래 상태</dt><dd>{{ trade_status_labels.get(product.trade_status, '거래중') }}{% if product.status == 'hidden' %} · 관리자 숨김{% endif %}</dd></div>
+            <div><dt>등록일</dt><dd>{{ product.created_at|kst }}</dd></div>
+        </dl>
+        <p class="description">{{ product.description }}</p>
+
+        <div class="button-row">
+            {% if current_user %}
+                <a class="button" href="{{ url_for('qna_page', product_id=product.id) }}">Q&amp;A {{ qna_count }}</a>
+                {% if current_user.id != product.seller_id and not current_user.is_admin %}
+                    <a class="button secondary" href="{{ url_for('messages', product_id=product.id) }}">판매자에게 메시지</a>
+                    <a class="button report-button" href="{{ url_for('report_product', product_id=product.id) }}">상품·판매자 신고</a>
+                {% endif %}
+                {% if current_user.id == product.seller_id %}
+                    <a class="button secondary" href="{{ url_for('profile') }}#my-products">내 상품 관리에서 수정</a>
+                {% endif %}
+            {% else %}
+                <a class="button" href="{{ url_for('login', next=url_for('product_detail', product_id=product.id)) }}">로그인 후 문의</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if current_user and current_user.is_admin %}
+<section class="admin-inline-panel">
+    <div class="section-heading admin-inline-heading">
+        <div><p class="eyebrow">ADMIN REPORT VIEW</p><h2>신고 검토</h2></div>
+        <a class="button secondary" href="{{ url_for('public_profile', username=product.seller_name) }}">판매자 관리 정보 보기</a>
+    </div>
+    <div class="admin-report-summary">
+        <article><strong>{{ product.report_count }}</strong><span>상품 누적 신고</span></article>
+        <article><strong>{{ product_reports|length }}</strong><span>상품 신고 상세</span></article>
+        <article><strong>{{ seller_reports|length }}</strong><span>판매자 신고 상세</span></article>
+    </div>
+    <div class="admin-report-grid">
+        <section class="table-card compact-table-card">
+            <h3>이 상품 신고 목록</h3>
+            <div class="table-scroll"><table><thead><tr><th>신고자</th><th>유형</th><th>사유</th><th>시간</th></tr></thead><tbody>
+            {% for report in product_reports %}<tr><td><a href="{{ url_for('public_profile', username=report.reporter_name) }}">{{ report.reporter_nickname }}</a></td><td>{{ report.reason_category }}</td><td>{{ report.reason }}</td><td>{{ report.created_at|kst }}</td></tr>{% else %}<tr><td colspan="4">상품 신고가 없습니다.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="table-card compact-table-card">
+            <h3>판매자 신고 목록</h3>
+            <div class="table-scroll"><table><thead><tr><th>신고자</th><th>유형</th><th>사유</th><th>시간</th></tr></thead><tbody>
+            {% for report in seller_reports %}<tr><td><a href="{{ url_for('public_profile', username=report.reporter_name) }}">{{ report.reporter_nickname }}</a></td><td>{{ report.reason_category }}</td><td>{{ report.reason }}</td><td>{{ report.created_at|kst }}</td></tr>{% else %}<tr><td colspan="4">판매자 신고가 없습니다.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

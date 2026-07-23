@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}상품 목록 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="home-market">
+    <form class="search-bar home-search" method="get" action="{{ url_for('index') }}">
+        <label class="sr-only" for="q">상품 검색</label>
+        <input id="q" name="q" value="{{ query }}" maxlength="50" placeholder="상품명, 설명, 카테고리 검색" autofocus>
+        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+        <button type="submit">검색</button>
+    </form>
+
+    <nav class="category-filter" aria-label="상품 카테고리">
+        <a class="{% if not selected_category %}active{% endif %}" href="{{ url_for('index', q=query) }}">전체</a>
+        {% for category in categories %}
+            <a class="{% if selected_category == category %}active{% endif %}" href="{{ url_for('index', q=query, category=category) }}">{{ category }}</a>
+        {% endfor %}
+    </nav>
+
+    <section class="product-grid" aria-label="상품 목록">
+    {% for product in products %}
+        <article class="product-card">
+            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+                {% if product.image_filename %}
+                    <img src="{{ product_image_url(product.image_filename) }}" alt="{{ product.name }}">
+                {% else %}
+                    <div class="image-placeholder">이미지 준비 중</div>
+                {% endif %}
+                <span class="status-badge status-{{ product.trade_status }}">{{ trade_status_labels.get(product.trade_status, '거래중') }}</span>
+            </a>
+            <div class="product-card-body">
+                <p class="category-chip">{{ product.category }}</p>
+                <h2><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h2>
+                <p class="price">{{ "{:,}".format(product.price) }}원</p>
+            </div>
+        </article>
+    {% else %}
+        <div class="empty-state">
+            {% if query or selected_category %}선택한 조건에 맞는 상품이 없습니다.{% else %}등록된 상품이 없습니다.{% endif %}
+        </div>
+    {% endfor %}
+    </section>
+</div>
+{% endblock %}

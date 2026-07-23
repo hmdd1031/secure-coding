@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}상품 수정{% else %}상품 등록{% endif %} - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="form-card wide">
+    <p class="eyebrow">SELL SAFELY</p>
+    <h1>{% if product %}상품 정보 수정{% else %}중고 상품 등록{% endif %}</h1>
+    <p class="form-required-notice">상품명, 카테고리, 상품 설명, 가격, 상품 이미지는 모두 필수 항목입니다.</p>
+    <form method="post" enctype="multipart/form-data" class="stack-form" data-single-submit>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% if not product %}<input type="hidden" name="submission_token" value="{{ submission_token }}">{% endif %}
+
+        <label for="name">상품명</label>
+        <input id="name" name="name" value="{{ request.form.get('name', product.name if product else '') }}" required minlength="2" maxlength="80">
+
+        <label for="category">카테고리</label>
+        {% set selected_category = request.form.get('category', product.category if product else '') %}
+        <select id="category" name="category" required>
+            <option value="">카테고리 선택</option>
+            {% for category in categories %}<option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+        </select>
+
+        <label for="description">상품 설명</label>
+        <textarea id="description" name="description" required minlength="5" maxlength="2000" rows="8">{{ request.form.get('description', product.description if product else '') }}</textarea>
+        <div class="field-help prohibited-help">
+            <div class="prohibited-tooltip">
+                <span
+                    class="prohibited-tooltip-trigger"
+                    tabindex="0"
+                    aria-describedby="prohibited-items-tooltip"
+                >금지 품목</span>
+                <div
+                    id="prohibited-items-tooltip"
+                    class="prohibited-tooltip-panel"
+                    role="tooltip"
+                >
+                    <strong>등록 금지 품목</strong>
+                    <ul>
+                        <li>마약류·처방약</li>
+                        <li>총기·탄약·폭발물·도검</li>
+                        <li>위조지폐·신분증·개인정보</li>
+                        <li>담배·전자담배·주류</li>
+                        <li>계정·불법 복제품</li>
+                    </ul>
+                </div>
+            </div>
+            <span>에 해당하는 상품은 등록할 수 없습니다.</span>
+        </div>
+
+        <label for="price">가격</label>
+        <input id="price" type="number" name="price" value="{{ request.form.get('price', product.price if product else '') }}" required min="0" max="10000000" step="1">
+
+        <label for="image">상품 이미지{% if product %} 변경{% endif %}</label>
+        <div class="file-upload-control">
+            <input id="image" class="file-input-native" type="file" name="image" accept="image/png,image/jpeg,image/webp" {% if not product %}required{% endif %} data-file-input>
+            <label for="image" class="file-upload-button">이미지 선택</label>
+            <span class="file-upload-name" data-file-name>{% if product %}새 이미지를 선택하지 않으면 기존 이미지를 유지합니다.{% else %}선택된 파일 없음{% endif %}</span>
+        </div>
+        <p class="field-help">4MB 이하 PNG/JPG/WEBP 파일만 허용합니다. 파일 서명과 형식을 검증한 뒤 무작위 파일명의 WEBP로 재저장합니다.</p>
+
+        <button type="submit" data-submit-button>{% if product %}수정 저장{% else %}상품 등록{% endif %}</button>
+    </form>
+</section>
+{% endblock %}

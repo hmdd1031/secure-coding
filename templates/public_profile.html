@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.nickname or profile_user.username }} 프로필 - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="public-profile-card">
+    <div class="profile-avatar" aria-hidden="true">{{ (profile_user.nickname or profile_user.username)[0]|upper }}</div>
+    <div>
+        <p class="eyebrow">SELLER PROFILE</p>
+        <h1>{{ profile_user.nickname or profile_user.username }}</h1>
+        <p class="profile-handle">@{{ profile_user.username }}</p>
+        <p class="public-bio">{{ profile_user.bio or '등록된 소개글이 없습니다.' }}</p>
+        <p class="profile-meta">가입일 {{ profile_user.created_at|kst }}</p>
+        {% if current_user and current_user.id != profile_user.id and not profile_user.is_admin %}
+            <a class="button report-button" href="{{ url_for('report_user', user_id=profile_user.id) }}">사용자 신고</a>
+        {% endif %}
+    </div>
+</section>
+
+{% if current_user and current_user.is_admin %}
+<section class="admin-user-card">
+    <div class="section-heading admin-inline-heading"><div><p class="eyebrow">ADMIN USER VIEW</p><h2>관리자 전용 사용자 정보</h2></div></div>
+    <dl class="admin-user-facts">
+        <div><dt>사용자 ID</dt><dd>{{ profile_user.id }}</dd></div>
+        <div><dt>이름</dt><dd>{{ profile_user.real_name }}</dd></div>
+        <div><dt>닉네임</dt><dd>{{ profile_user.nickname }}</dd></div>
+        <div><dt>로그인 아이디</dt><dd>{{ profile_user.username }}</dd></div>
+        <div><dt>계정 상태</dt><dd>{% if profile_user.is_suspended %}<span class="danger-label">휴면/차단</span>{% else %}<span class="success-label">정상</span>{% endif %}</dd></div>
+        <div><dt>사용자 신고 횟수</dt><dd>{{ profile_user.report_count }}</dd></div>
+        <div><dt>판매 상품 신고 합계</dt><dd>{{ product_report_total }}</dd></div>
+        <div><dt>잔액</dt><dd>{{ "{:,}".format(profile_user.balance) }}원</dd></div>
+        <div><dt>전화번호</dt><dd>{{ profile_user.phone or '미등록' }}</dd></div>
+        <div><dt>주소</dt><dd>{% if profile_user.address_city %}{{ profile_user.address_city }} {{ profile_user.address_district }} {{ profile_user.address_neighborhood }} {{ profile_user.address_detail }}{% else %}미등록{% endif %}</dd></div>
+        <div><dt>개인정보 동의</dt><dd>{% if profile_user.privacy_consent %}동의{% else %}미동의{% endif %}</dd></div>
+        <div><dt>동의 시각</dt><dd>{{ profile_user.consent_at|kst if profile_user.consent_at else '기록 없음' }}</dd></div>
+    </dl>
+    <section class="table-card compact-table-card">
+        <h3>이 사용자에 대한 신고 이력</h3>
+        <div class="table-scroll"><table><thead><tr><th>신고자</th><th>유형</th><th>사유</th><th>시간</th></tr></thead><tbody>
+        {% for report in user_reports %}<tr><td><a href="{{ url_for('public_profile', username=report.reporter_name) }}">{{ report.reporter_nickname }}</a></td><td>{{ report.reason_category }}</td><td>{{ report.reason }}</td><td>{{ report.created_at|kst }}</td></tr>{% else %}<tr><td colspan="4">사용자 신고가 없습니다.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+</section>
+{% endif %}
+
+<div class="section-heading"><h2>{{ profile_user.nickname or profile_user.username }}님의 판매 상품</h2></div>
+<section class="product-grid">
+{% for product in products %}
+    <article class="product-card">
+        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+            <img src="{{ product_image_url(product.image_filename) }}" alt="{{ product.name }}">
+            <span class="status-badge status-{{ product.trade_status }}">{{ trade_status_labels.get(product.trade_status, '거래중') }}</span>
+        </a>
+        <div class="product-card-body"><p class="category-chip">{{ product.category }}</p><h2><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h2><p class="price">{{ "{:,}".format(product.price) }}원{% if current_user and current_user.is_admin and product.status == 'hidden' %} · 관리자 숨김{% endif %}</p></div>
+    </article>
+{% else %}<div class="empty-state">공개된 판매 상품이 없습니다.</div>{% endfor %}
+</section>
+{% endblock %}

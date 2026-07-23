@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}송금 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="wallet-stack">
+    <section class="wallet-hero wallet-section">
+        <p class="eyebrow">SAFE DEMO TRANSFER</p>
+        <h1>내 잔액</h1>
+        <p class="balance">{{ "{:,}".format(user.balance) }}원</p>
+        <p>실제 결제망이 아닌 과제용 가상 잔액입니다.</p>
+    </section>
+    <section class="form-card wallet-section wallet-form-card">
+        <h2>사용자 간 송금</h2>
+        <form method="post" class="stack-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="submission_token" value="{{ submission_token }}">
+            <label for="recipient">받는 사용자 아이디</label>
+            <input id="recipient" name="recipient" required maxlength="20">
+            <label for="amount">금액</label>
+            <input id="amount" type="number" name="amount" required min="1" max="1000000">
+            <button type="submit">송금</button>
+        </form>
+    </section>
+    <section class="table-card wallet-section">
+        <h2>송금 내역</h2>
+        <div class="table-scroll"><table><thead><tr><th>시간</th><th>보낸 사람</th><th>받는 사람</th><th>금액</th></tr></thead><tbody>
+        {% for row in transfers %}<tr><td>{{ row.created_at|kst }}</td><td>{{ row.sender_nickname }}</td><td>{{ row.receiver_nickname }}</td><td>{{ "{:,}".format(row.amount) }}원</td></tr>
+        {% else %}<tr><td colspan="4">송금 내역이 없습니다.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+</div>
+{% endblock %}

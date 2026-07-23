@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+instance/.secret_key
+
+# Database and runtime files
+instance/*.db
+instance/*.sqlite
+instance/*.sqlite3
+instance/*.db-wal
+instance/*.db-shm
+instance/uploads/
+
+# User uploads
+static/uploads/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Temporary files
+*.log
+*.tmp
+*.bak

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} - WHITE MARKET 게시판{% endblock %}
+{% block content %}
+<article class="board-detail-card" data-board-view-url="{{ url_for('board_record_view', post_id=post.id) }}">
+    <header>
+        <p class="category-chip">{{ post.category }}</p>
+        <h1>{{ post.title }}</h1>
+        <div class="board-post-meta"><a href="{{ url_for('public_profile', username=post.author_name) }}">{{ post.author_nickname }}</a><span>{{ post.created_at|kst }}</span><span>조회 <b data-board-view-count>{{ post.view_count }}</b></span></div>
+    </header>
+    <div class="board-post-body">{{ post.body }}</div>
+    <div class="button-row">
+        <a class="button secondary" href="{{ url_for('board_list') }}">목록</a>
+        {% if current_user and (current_user.id == post.author_id or current_user.is_admin) %}
+        <form method="post" action="{{ url_for('board_delete', post_id=post.id) }}" data-confirm="게시글을 삭제할까요?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger" type="submit">삭제</button>
+        </form>
+        {% endif %}
+    </div>
+</article>
+<section class="comment-section">
+    <div class="section-heading"><h2>댓글 {{ comments|length }}</h2></div>
+    <div class="comment-list">
+    {% for comment in comments %}
+        <article class="comment-card">
+            <div><a href="{{ url_for('public_profile', username=comment.author_name) }}">{{ comment.author_nickname }}</a><time>{{ comment.created_at|kst }}</time></div>
+            <p>{{ comment.body }}</p>
+            {% if current_user and (current_user.id == comment.author_id or current_user.is_admin) %}
+            <form method="post" action="{{ url_for('board_delete_comment', post_id=post.id, comment_id=comment.id) }}" data-confirm="댓글을 삭제할까요?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="text-button danger-text" type="submit">삭제</button>
+            </form>
+            {% endif %}
+        </article>
+    {% else %}<div class="empty-state">첫 댓글을 남겨보세요.</div>{% endfor %}
+    </div>
+    {% if current_user %}
+    <form method="post" action="{{ url_for('board_add_comment', post_id=post.id) }}" class="comment-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="sr-only" for="comment-body">댓글</label>
+        <textarea class="fixed-textarea" id="comment-body" name="body" required maxlength="1000" rows="4" placeholder="댓글을 입력하세요."></textarea>
+        <button type="submit">댓글 등록</button>
+    </form>
+    {% else %}<p class="login-required-note"><a href="{{ url_for('login', next=url_for('board_detail', post_id=post.id)) }}">로그인</a>하면 댓글을 작성할 수 있습니다.</p>{% endif %}
+</section>
+{% endblock %}

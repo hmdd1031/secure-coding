@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}1:1 메시지 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="section-heading">
+    <div><p class="eyebrow">PRIVATE MESSAGES</p><h1>1:1 메시지</h1><p class="helper">상품별·상대방별 대화를 한 화면에서 이어서 확인합니다.</p></div>
+    <a class="button secondary" href="{{ url_for('board_list') }}">게시판</a>
+</div>
+<section class="conversation-list">
+{% for conversation in conversations %}
+    <a class="conversation-card {% if conversation.unread_count %}has-unread{% endif %}" href="{{ url_for('message_thread', product_id=conversation.product_id, other_user_id=conversation.other_user_id) }}">
+        <div class="conversation-product-thumb"><img src="{{ product_image_url(conversation.image_filename) }}" alt="상품 이미지"></div>
+        <div class="conversation-summary">
+            <div class="conversation-title-row"><strong>{{ conversation.other_nickname }}</strong>{% if conversation.unread_count %}<span class="conversation-badge">{{ conversation.unread_count }}</span>{% endif %}</div>
+            <span class="conversation-product-name">{{ conversation.product_name }}</span>
+            <p>{{ conversation.latest_body }}</p>
+        </div>
+        <time>{{ conversation.latest_at|kst }}</time>
+    </a>
+{% else %}
+    <div class="empty-state">아직 시작한 상품 문의가 없습니다. 상품 상세에서 판매자에게 메시지를 보내보세요.</div>
+{% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Q&amp;A - {{ product.name }}{% endblock %}
+{% block content %}
+<div class="section-heading">
+    <div><p class="eyebrow">PRODUCT Q&amp;A</p><h1>{{ product.name }}</h1></div>
+    <a class="button secondary" href="{{ url_for('product_detail', product_id=product.id) }}">상품으로 돌아가기</a>
+</div>
+<section class="qna-list">
+{% for post in posts %}
+    <article class="qna-item">
+        <div class="qna-head">
+            <div><span class="category">상품 상세 문의</span><h2>{{ post.title }}</h2></div>
+            <p><a href="{{ url_for('public_profile', username=post.author_name) }}">{{ post.author_nickname }}</a> · {{ post.created_at|kst }}</p>
+        </div>
+        <p class="qna-body">{{ post.body }}</p>
+        {% if current_user.id == post.author_id or current_user.is_admin %}
+        <form method="post" action="{{ url_for('delete_question', product_id=product.id, post_id=post.id) }}" data-confirm="질문을 삭제할까요?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="text-button danger-text">삭제</button>
+        </form>
+        {% endif %}
+    </article>
+{% else %}<div class="empty-state">등록된 질문이 없습니다.</div>{% endfor %}
+</section>
+<section class="form-card wide">
+    <h2>새 질문 등록</h2>
+    <form method="post" action="{{ url_for('add_question', product_id=product.id) }}" class="stack-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="title">제목</label>
+        <input id="title" name="title" required minlength="2" maxlength="100">
+        <label for="body">내용</label>
+        <textarea class="fixed-textarea" id="body" name="body" required minlength="2" maxlength="1000" rows="5"></textarea>
+        <button type="submit">질문 등록</button>
+    </form>
+</section>
+{% endblock %}

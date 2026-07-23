@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}관리자 - WHITE MARKET{% endblock %}
+{% block content %}
+<div class="section-heading"><div><p class="eyebrow">ADMIN CONTROL</p><h1>플랫폼 관리</h1><p class="helper">관리자 계정은 상품 거래와 가상 송금에 참여하지 않습니다.</p></div></div>
+
+<section class="admin-dashboard-summary">
+    <article><strong>{{ summary.user_count }}</strong><span>일반 사용자</span></article>
+    <article><strong>{{ summary.suspended_count }}</strong><span>휴면 사용자</span></article>
+    <article><strong>{{ summary.product_count }}</strong><span>전체 상품</span></article>
+    <article><strong>{{ summary.hidden_count }}</strong><span>숨김 상품</span></article>
+    <article><strong>{{ summary.report_count }}</strong><span>누적 신고</span></article>
+</section>
+
+<section class="table-card">
+<h2>사용자 관리</h2>
+<p class="field-help">사용자명에서 상세 프로필과 신고 이력을 확인할 수 있습니다.</p>
+<div class="table-scroll"><table class="admin-table"><thead><tr><th>ID</th><th>이름</th><th>닉네임 / 아이디</th><th>신고</th><th>가입일</th><th>상태</th></tr></thead><tbody>
+{% for user in users %}
+<tr>
+    <td>{{ user.id }}</td>
+    <td>{{ user.real_name }}</td>
+    <td><a href="{{ url_for('public_profile', username=user.username) }}">{{ user.nickname or user.username }}</a><small class="admin-user-handle">@{{ user.username }}</small>{% if user.is_admin %} <span class="admin-role-badge">관리자</span>{% endif %}</td>
+    <td>{{ user.report_count }}</td>
+    <td>{{ user.created_at|kst }}</td>
+    <td>
+        {% if user.is_admin %}
+            <span class="state-badge state-admin">관리자 계정</span>
+        {% else %}
+            <form method="post" action="{{ url_for('admin_toggle_user', user_id=user.id) }}" class="inline-admin-state-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="state" value="{% if user.is_suspended %}active{% else %}suspended{% endif %}">
+                <span class="state-badge {% if user.is_suspended %}state-hidden{% else %}state-active{% endif %}">{% if user.is_suspended %}휴면{% else %}정상{% endif %}</span>
+                <button type="submit" class="state-action-button">{% if user.is_suspended %}정상 전환{% else %}휴면 전환{% endif %}</button>
+            </form>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+</section>
+
+<section class="table-card">
+<h2>상품 관리</h2>
+<p class="field-help">거래 상태와 공개 상태를 각각의 열에서 직접 변경합니다.</p>
+<div class="table-scroll"><table class="admin-table admin-product-table"><thead><tr><th>ID</th><th>상품명</th><th>판매자</th><th>신고</th><th>거래 상태</th><th>공개 상태</th><th>삭제</th></tr></thead><tbody>
+{% for product in products %}
+<tr>
+    <td>{{ product.id }}</td>
+    <td><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></td>
+    <td><a href="{{ url_for('public_profile', username=product.seller_name) }}">{{ product.seller_nickname }}</a></td>
+    <td>{{ product.report_count }}</td>
+    <td>
+        <form method="post" action="{{ url_for('admin_product_trade_status', product_id=product.id) }}" class="admin-cell-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <select name="trade_status" aria-label="{{ product.name }} 거래 상태">
+                {% for value, label in trade_status_labels.items() %}<option value="{{ value }}" {% if product.trade_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <button type="submit">적용</button>
+        </form>
+    </td>
+    <td>
+        <form method="post" action="{{ url_for('admin_product_visibility', product_id=product.id) }}" class="admin-cell-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <select name="visibility" aria-label="{{ product.name }} 공개 상태">
+                <option value="active" {% if product.status != 'hidden' %}selected{% endif %}>공개</option>
+                <option value="hidden" {% if product.status == 'hidden' %}selected{% endif %}>숨김</option>
+            </select>
+            <button type="submit">적용</button>
+        </form>
+    </td>
+    <td>
+        <form method="post" action="{{ url_for('delete_product', product_id=product.id) }}" data-confirm="관리자 권한으로 이 상품을 삭제할까요?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="admin-delete-button">삭제</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+</section>
+
+<section class="table-card">
+<h2>신고 이력</h2><div class="table-scroll"><table><thead><tr><th>시간</th><th>신고자</th><th>대상</th><th>유형</th><th>사유</th></tr></thead><tbody>
+{% for report in reports %}<tr><td>{{ report.created_at|kst }}</td><td><a href="{{ url_for('public_profile', username=report.reporter_name) }}">{{ report.reporter_nickname }}</a></td><td>{% if report.target_type == 'product' %}<a href="{{ url_for('product_detail', product_id=report.target_id) }}">{{ report.target_product_name or ('상품 #' ~ report.target_id) }}</a>{% else %}<a href="{{ url_for('public_profile', username=report.target_user_name) }}">{{ report.target_user_nickname or ('사용자 #' ~ report.target_id) }}</a>{% endif %}</td><td>{{ report.reason_category }}</td><td>{{ report.reason }}</td></tr>{% else %}<tr><td colspan="5">신고 내역이 없습니다.</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}게시글 작성 - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="form-card wide">
+    <p class="eyebrow">NEW COMMUNITY POST</p>
+    <h1>게시글 작성</h1>
+    <form method="post" class="stack-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="category">카테고리</label>
+        <select id="category" name="category" required>
+            <option value="">선택</option>
+            {% for category in categories %}<option value="{{ category }}" {% if request.form.get('category') == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+        </select>
+        <label for="title">제목</label>
+        <input id="title" name="title" value="{{ request.form.get('title', '') }}" required minlength="2" maxlength="100">
+        <label for="body">내용</label>
+        <textarea class="fixed-textarea board-body-textarea" id="body" name="body" required minlength="2" maxlength="3000" rows="12">{{ request.form.get('body', '') }}</textarea>
+        <div class="button-row form-actions board-form-actions"><a class="button secondary" href="{{ url_for('board_list') }}">취소</a><button type="submit" class="button board-submit-button">등록</button></div>
+    </form>
+</section>
+{% endblock %}

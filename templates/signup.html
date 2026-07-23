@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}회원가입 - WHITE MARKET{% endblock %}
+{% block content %}
+<section class="auth-card auth-card-wide">
+    <p class="eyebrow">JOIN WHITE MARKET</p>
+    <h1>회원가입</h1>
+    <form method="post" class="stack-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-two-columns">
+            <div>
+                <label for="real_name">이름</label>
+                <input id="real_name" name="real_name" value="{{ request.form.get('real_name', '') }}" required minlength="2" maxlength="30" autocomplete="name" placeholder="홍길동">
+            </div>
+            <div>
+                <label for="nickname">닉네임</label>
+                <input id="nickname" name="nickname" value="{{ request.form.get('nickname', '') }}" required minlength="2" maxlength="20" pattern="[가-힣A-Za-z0-9_]+" placeholder="화이트상점">
+            </div>
+        </div>
+
+        <label for="username">아이디</label>
+        <input id="username" name="username" value="{{ request.form.get('username', '') }}" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" autocomplete="username">
+        <p class="field-help">로그인에 사용하는 영문, 숫자, 밑줄 3~20자입니다.</p>
+
+        <div class="form-two-columns">
+            <div>
+                <label for="password">비밀번호</label>
+                <input id="password" type="password" name="password" required minlength="10" maxlength="128" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{10,128}" title="영문 대문자·소문자, 숫자, 특수문자를 각각 1개 이상 포함하세요." autocomplete="new-password">
+            </div>
+            <div>
+                <label for="password_confirm">비밀번호 확인</label>
+                <input id="password_confirm" type="password" name="password_confirm" required minlength="10" maxlength="128" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{10,128}" title="영문 대문자·소문자, 숫자, 특수문자를 각각 1개 이상 포함하세요." autocomplete="new-password">
+            </div>
+        </div>
+        <p class="field-help">10자 이상이며 영문 대문자·소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.</p>
+
+        <label for="phone">휴대전화 번호</label>
+        <input id="phone" name="phone" value="{{ request.form.get('phone', '') }}" required maxlength="13" inputmode="tel" autocomplete="tel" placeholder="010-1234-5678">
+
+        <fieldset class="address-fieldset">
+            <legend>주소</legend>
+            <p class="field-help">외부 주소 API를 사용하지 않고 거래 지역을 직접 입력합니다.</p>
+            <div class="postal-code-field">
+                <label for="postal_code">우편번호</label>
+                <input id="postal_code" name="postal_code" value="{{ request.form.get('postal_code', '') }}" required inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" autocomplete="postal-code" placeholder="06236">
+            </div>
+            <div class="address-grid">
+                <div>
+                    <label for="address_city">시·도</label>
+                    <input id="address_city" name="address_city" value="{{ request.form.get('address_city', '') }}" required minlength="2" maxlength="30" autocomplete="address-level1" placeholder="서울특별시">
+                </div>
+                <div>
+                    <label for="address_district">시·군·구</label>
+                    <input id="address_district" name="address_district" value="{{ request.form.get('address_district', '') }}" required minlength="2" maxlength="30" autocomplete="address-level2" placeholder="강남구">
+                </div>
+                <div>
+                    <label for="address_neighborhood">읍·면·동</label>
+                    <input id="address_neighborhood" name="address_neighborhood" value="{{ request.form.get('address_neighborhood', '') }}" required minlength="1" maxlength="30" autocomplete="address-level3" placeholder="역삼동">
+                </div>
+            </div>
+            <label for="address_detail">상세 주소</label>
+            <input id="address_detail" name="address_detail" value="{{ request.form.get('address_detail', '') }}" required minlength="1" maxlength="100" autocomplete="address-line2" placeholder="테헤란로 1, 화이트빌딩 101동 1203호">
+        </fieldset>
+
+        <fieldset class="consent-box">
+            <legend>개인정보 동의</legend>
+            <label class="check-row">
+                <input type="checkbox" name="privacy_consent" required {% if request.form.get('privacy_consent') %}checked{% endif %}>
+                <span>
+                    <strong>[필수] 개인정보 수집·이용 동의</strong>
+                    <small>이름, 전화번호와 주소는 회원 식별 및 거래 연락 목적으로 저장하며 일반 공개 프로필에는 노출하지 않습니다. <a href="{{ url_for('privacy_policy') }}" target="_blank" rel="noopener">자세히 보기</a></small>
+                </span>
+            </label>
+        </fieldset>
+
+        <button type="submit">가입하기</button>
+    </form>
+</section>
+{% endblock %}
