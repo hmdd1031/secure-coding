@@ -43,3 +43,50 @@ source .venv/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+
+## 환경변수 설정
+
+Linux 및 WSL:
+
+```bash
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+export ADMIN_PASSWORD="강한-관리자-비밀번호"
+export DEMO_PASSWORD="강한-데모-비밀번호"
+export TRUSTED_HOSTS="127.0.0.1,localhost"
+```
+
+실제 비밀번호와 비밀키는 저장소에 커밋하지 않습니다.
+
+## 서버 실행
+
+```bash
+python app.py
+```
+
+브라우저에서 다음 주소로 접속합니다.
+
+```text
+http://127.0.0.1:5000
+```
+
+## 테스트 및 보안 검사
+
+개발용 패키지를 설치합니다.
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+다음 명령으로 테스트와 보안 검사를 실행합니다.
+
+```bash
+python -m pytest -q
+python -m bandit -r app.py -x tests
+python -m pip_audit -r requirements.txt
+```
+
+최종 확인 결과:
+
+- pytest: 40 passed
+- Bandit: No issues identified
+- pip-audit: No known vulnerabilities found
